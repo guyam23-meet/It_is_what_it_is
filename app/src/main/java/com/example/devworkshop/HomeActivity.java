@@ -11,11 +11,16 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
 public class HomeActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
+    private FirebaseDatabase database;
     private ListView listview;
     private ArrayList<Startup> startups;
     private ArrayAdapter<Startup> arrayAdapter;
@@ -24,12 +29,24 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         mAuth = FirebaseAuth.getInstance();
+        database = FirebaseDatabase.getInstance();
+        database.getReference("Startups").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                startups = new ArrayList<>();
+                for(DataSnapshot deta:snapshot.getChildren()){
+                    startups.add(deta.getValue(Startup.class));
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
         listview = findViewById(R.id.listview_home);
-        startups = new ArrayList<Startup>();
         arrayAdapter = new StartupArrayAdapter(this,R.layout.startup_row, startups);
         listview.setAdapter(arrayAdapter);
-        startups.add(new Startup("Objective", "misinformation",true));
-        startups.add(new Startup("I really dont know", "problems",false));
     }
 
     @Override
